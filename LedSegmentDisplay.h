@@ -1,15 +1,31 @@
+/*
+  A homemade library for seven segment led display.
+  Use 74HC595 shift register.
+*/
+
+#pragma once
 #include "Arduino.h"
+
+#define LED_SEGMENT_DIGITS 4
 
 class LedSegmentDisplay {
   public:
-    void LedSegmentDisplay(int d3Pin, int d2Pin, int d1Pin, int d0Pin, int dataPin, int srclkPin, int rclkPin, int refreshCycle);
-    void display(int i);
-    void display(float f);
+    LedSegmentDisplay(int d3Pin, int d2Pin, int d1Pin, int d0Pin, int dataPin, int srclkPin, int rclkPin, int refreshCycle);  // constructor
+    LedSegmentDisplay(int *digitPins, int dataPin, int srclkPin, int rclkPin, int refreshCycle);  // constructor
+
+    void begin();
+    void display(int i);  // display integer
+    void display(float f);  // display decimal
+    void display(int, int, int, int);  // display each number
+    void display(int *);
+    void displayRaw(byte, byte, byte, byte);  // display each byte code
+    void displayRaw(byte *);  // display each byte code
+
   private:
-    int LED[4];
+    int LED[LED_SEGMENT_DIGITS];
     int SER, SRCLK, RCLK;
     int cycle;
-    byte led_segments[12] {
+    const byte led_segments[12] = {
       B11111100,  // 0
       B01100000,  // 1
       B11011010,  // 2
@@ -23,7 +39,8 @@ class LedSegmentDisplay {
       B00000001,  // D.P 
       B00000000,  // OFF
     };
-    bool setShiftReg(byte data);
-    int getDigit(int i, int d);
-    int getDigitDecimal(float f, int d);
-}
+    void showDigit(int, byte);  // show one digit
+    bool setShiftReg(byte data);  // send byte data through a shift register
+    int getDigit(int i, int d);  // get a number for each digit from integer
+    int getDigitDecimal(float f, int d);  // get a number for each digit from decimal
+};
