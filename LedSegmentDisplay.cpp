@@ -1,5 +1,4 @@
 #include "LedSegmentDisplay.h"
-#include <math.h>
 
 /* constructor */
 LedSegmentDisplay::LedSegmentDisplay(int d3Pin, int d2Pin, int d1Pin, int d0Pin, int dataPin, int srclkPin, int rclkPin, int refreshCycle) {
@@ -30,46 +29,13 @@ void LedSegmentDisplay::begin() {
   setShiftReg(led_segments[11]);  // off
 }
 
-void LedSegmentDisplay::display(int i) {
-  // digiit 0
-  delay(cycle);
-  digitalWrite(LED[0], LOW);
-  digitalWrite(LED[1], HIGH);
-  digitalWrite(LED[2], HIGH);
-  digitalWrite(LED[3], HIGH);
-  setShiftReg(led_segments[getDigit(i, 0)]);
-  delay(cycle);
-  setShiftReg(led_segments[11]);
-
-  // digiit 1
-  delay(cycle);
-  digitalWrite(LED[0], HIGH);
-  digitalWrite(LED[1], LOW);
-  digitalWrite(LED[2], HIGH);
-  digitalWrite(LED[3], HIGH);
-  setShiftReg(led_segments[getDigit(i, 1)]);
-  delay(cycle);
-  setShiftReg(led_segments[11]);
-
-  // digiit 2
-  delay(cycle);
-  digitalWrite(LED[0], HIGH);
-  digitalWrite(LED[1], HIGH);
-  digitalWrite(LED[2], LOW);
-  digitalWrite(LED[3], HIGH);
-  setShiftReg(led_segments[getDigit(i, 2)]);
-  delay(cycle);
-  setShiftReg(led_segments[11]);
-
-  // digiit 3
-  delay(cycle);
-  digitalWrite(LED[0], HIGH);
-  digitalWrite(LED[1], HIGH);
-  digitalWrite(LED[2], HIGH);
-  digitalWrite(LED[3], LOW);
-  setShiftReg(led_segments[getDigit(i, 3)]);
-  delay(cycle);
-  setShiftReg(led_segments[11]);
+void LedSegmentDisplay::display(int num) {
+  if (num >= power(10, LED_SEGMENT_DIGITS) || num < 0) {
+    return;
+  }
+  for (int i = 0; i < LED_SEGMENT_DIGITS; i++) {
+    showDigit(LED_SEGMENT_DIGITS-1 - i, led_segments[getDigit(num, LED_SEGMENT_DIGITS-1 - i)]);
+  }
 }
 
 void LedSegmentDisplay::display(float f) {
@@ -114,64 +80,15 @@ void LedSegmentDisplay::display(float f) {
   setShiftReg(led_segments[11]);
 }
 
-void LedSegmentDisplay::display(int d3, int d2, int d1, int d0) {
-  // digiit 3
-  delay(cycle);
-  digitalWrite(LED[0], HIGH);
-  digitalWrite(LED[1], HIGH);
-  digitalWrite(LED[2], HIGH);
-  digitalWrite(LED[3], LOW);
-  setShiftReg(led_segments[d3]);
-  delay(cycle);
-  setShiftReg(led_segments[11]);
-
-  // digiit 2
-  delay(cycle);
-  digitalWrite(LED[0], HIGH);
-  digitalWrite(LED[1], HIGH);
-  digitalWrite(LED[2], LOW);
-  digitalWrite(LED[3], HIGH);
-  setShiftReg(led_segments[d2]);
-  delay(cycle);
-  setShiftReg(led_segments[11]);
-
-  // digiit 1
-  delay(cycle);
-  digitalWrite(LED[0], HIGH);
-  digitalWrite(LED[1], LOW);
-  digitalWrite(LED[2], HIGH);
-  digitalWrite(LED[3], HIGH);
-  setShiftReg(led_segments[d1]);
-  delay(cycle);
-  setShiftReg(led_segments[11]);
-
-  // digiit 0
-  delay(cycle);
-  digitalWrite(LED[0], LOW);
-  digitalWrite(LED[1], HIGH);
-  digitalWrite(LED[2], HIGH);
-  digitalWrite(LED[3], HIGH);
-  setShiftReg(led_segments[d0]);
-  delay(cycle);
-  setShiftReg(led_segments[11]);
-}
-
-void LedSegmentDisplay::display(int *number) {
+void LedSegmentDisplay::display(int *numbers) {
   for (int i = 0; i < LED_SEGMENT_DIGITS; ++i) {
-    showDigit(LED_SEGMENT_DIGITS-1 - i, led_segments[number[i]]);
+    showDigit(LED_SEGMENT_DIGITS-1 - i, led_segments[numbers[i]]);
   }
 }
 
-void LedSegmentDisplay::displayRaw(byte d3, byte d2, byte d1, byte d0) {
-  showDigit(3, d3);
-  showDigit(2, d2);
-  showDigit(1, d1);
-  showDigit(0, d0);
-}
-
-void LedSegmentDisplay::displayRaw(byte *data) {
+void LedSegmentDisplay::displayRaw(byte *bytes) {
   for (int i = 0; i < LED_SEGMENT_DIGITS; ++i) {
-    showDigit(LED_SEGMENT_DIGITS-1 - i, data[i]);
+    showDigit(LED_SEGMENT_DIGITS-1 - i, bytes[i]);
   }
 }
 
@@ -197,14 +114,22 @@ bool LedSegmentDisplay::setShiftReg(byte data) {
   digitalWrite(RCLK, HIGH);
 }
 
-int LedSegmentDisplay::getDigit(int i, int d) {
-  int res = (i / (int)pow(10, d)) % 10;
-  if (res == 0 && i / (int)pow(10, d+1) == 0) {
-    res = 11;  // これで正しいのか？
+int LedSegmentDisplay::getDigit(int num, int digit) {
+  int res = (num % power(10, digit+1)) / power(10, digit);
+  if (res == 0 && digit != 0 && (num / power(10, digit+1) == 0)) {
+    res = 11;
   }
   return res;
 }
 
-int LedSegmentDisplay::getDigitDecimal(float f, int d) {
+int LedSegmentDisplay::getDigitDecimal(float num, int digit) {
   // 小数の各桁を取り出す方法が思いつかない...
+}
+
+int LedSegmentDisplay::power(int x, int y) {
+  int result = 1;
+  for (int i = 0; i < y; ++i) {
+    result *= x;
+  }
+  return result;
 }

@@ -14,11 +14,9 @@ class LedSegmentDisplay {
     LedSegmentDisplay(int *digitPins, int dataPin, int srclkPin, int rclkPin, int refreshCycle);  // constructor
 
     void begin();
-    void display(int i);  // display integer
+    void display(int);  // display integer
     void display(float f);  // display decimal
-    void display(int, int, int, int);  // display each number
     void display(int *);
-    void displayRaw(byte, byte, byte, byte);  // display each byte code
     void displayRaw(byte *);  // display each byte code
 
   private:
@@ -35,12 +33,13 @@ class LedSegmentDisplay {
       B10111110,  // 6
       B11100000,  // 7
       B11111110,  // 8
-      B11100110,  // 9
+      B11110110,  // 9
       B00000001,  // D.P 
       B00000000,  // OFF
     };
     void showDigit(int, byte);  // show one digit
     bool setShiftReg(byte data);  // send byte data through a shift register
-    int getDigit(int i, int d);  // get a number for each digit from integer
-    int getDigitDecimal(float f, int d);  // get a number for each digit from decimal
+    int getDigit(int num, int digit);  // get a number for each digit from integer
+    int getDigitDecimal(float num, int digit);  // get a number for each digit from decimal
+    int power(int x, int y);  // (int)pow(x, y) does not works properly, so make a int only version...
 };
